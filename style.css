@@ -1,0 +1,28 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: greenyellow;
+}
+
+.container{
+    background-color: blue;
+    padding: 10px;
+    border-radius: 15px;
+    display: grid;
+    grid: repeat(3, 1fr) / repeat(3, 1fr);
+    gap: 10px;
+    height: 50%;
+    aspect-ratio: 1/1;
+}
+
+.container button{
+    border: none;
+    border-radius: 15px;
+}
