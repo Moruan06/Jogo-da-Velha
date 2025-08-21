@@ -4,19 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Jogo da Velha</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css"/>
+
   </head>
   <body>
-    <div class="container">
-      <button class="square"></button>
-      <button class="square"></button>
-      <button class="square"></button>
-      <button class="square"></button>
-      <button class="square"></button>
-      <button class="square"></button>
-      <button class="square"></button>
-      <button class="square"></button>
-      <button class="square"></button>
+    <div class="startScreen">
+      <h1>TIC-TAC-TOE</h1>
+      <button id="start">START</button>
+    </div>
+    <div class="gameScreen">
+      <p class="score">Player 1 score: <span class="scorePlayer1"></span></p>
+      <div class="container">
+        <button class="square"></button>
+        <button class="square"></button>
+        <button class="square"></button>
+        <button class="square"></button>
+        <button class="square"></button>
+        <button class="square"></button>
+        <button class="square"></button>
+        <button class="square"></button>
+        <button class="square"></button>
+      </div>
+      <p class="score">Player 2 score: <span class="scorePlayer2"></span></p>
+      <h1 class="warning"></h1>
     </div>
     <script src="script.js"></script>
   </body>

@@ -1,18 +1,37 @@
+const squares = document.querySelectorAll(".square");
+const scorePlayer1 = document.querySelector(".scorePlayer1");
+const scorePlayer2 = document.querySelector(".scorePlayer2");
+const warning = document.querySelector(".warning");
+squares.forEach((square, index) => {
+  square.addEventListener("click", (e) => {
+    gameController.playRound(index);
+  });
+});
+
+const startGame = (() => {
+  const startBtn = document.querySelector("#start");
+  startBtn.addEventListener("click", (e) => {
+    e.target.style.visibility = "hidden";
+    e.target.closest(".startScreen").style.textShadow =
+      "0 0 10px  rgba(255, 191, 5, 0.5)";
+    document.querySelector(".gameScreen").style =
+      "visibility: visible; width: 100%";
+    gameBoard.resetBoard();
+  });
+
+  const getBtn = () => startBtn;
+
+  return { getBtn };
+})();
+
 const gameBoard = (() => {
   let board = Array(9).fill("");
-  const squares = document.querySelectorAll(".square");
 
   const render = () => {
     board.forEach((marker, index) => {
-        const currentSquare = squares[index];
-        currentSquare.textContent = marker;
-
-        if(marker){
-            currentSquare.classList.add("played");
-        }else{
-            currentSquare.classList.remove("played");
-        }
-    })
+      const currentSquare = squares[index];
+      currentSquare.textContent = marker;
+    });
   };
   const drawGame = (index, marker) => {
     board[index] = marker;
@@ -22,10 +41,27 @@ const gameBoard = (() => {
   const getBoard = () => board;
   const resetBoard = () => {
     board = Array(9).fill("");
+    squares.forEach((square) => {
+      square.classList.remove("win");
+      square.classList.remove("draw");
+    });
+    warning.textContent = "";
     render();
   };
+
+  const showDraw = () => {
+    squares.forEach((square) => {
+      square.classList.add("draw");
+    });
+  };
+
+  const showWinners = (winLine) => {
+    winLine.forEach((index) => {
+      squares[index].classList.add("win");
+    });
+  };
   render();
-  return { drawGame, getBoard, resetBoard };
+  return { drawGame, getBoard, resetBoard, showWinners, showDraw };
 })();
 
 const defineWinner = () => {
@@ -50,23 +86,25 @@ const defineWinner = () => {
       gameBoard.getBoard()[a] == gameBoard.getBoard()[b] &&
       gameBoard.getBoard()[a] == gameBoard.getBoard()[c]
     ) {
-      return gameBoard.getBoard()[a];
+      return { winner: gameBoard.getBoard()[a], line: combos };
     }
   }
 
   return null;
 };
 
-const playerFactory = (marker) => {
+const playerFactory = (marker, name) => {
   let roundWins = 0;
   const getRoundWins = () => roundWins;
   const increaseRoundWins = () => roundWins++;
-  return { marker, getRoundWins, increaseRoundWins };
+  const resetWins = () => (roundWins = 0);
+
+  return { name, marker, getRoundWins, increaseRoundWins, resetWins };
 };
 
 const gameController = (() => {
-  const player1 = playerFactory("X");
-  const player2 = playerFactory("O");
+  const player1 = playerFactory("X", "Player 1");
+  const player2 = playerFactory("O", "Player 2");
 
   let currentPlayer = player1;
   let turnCount = 0;
@@ -76,43 +114,47 @@ const gameController = (() => {
 
   const playRound = (index) => {
     if (gameBoard.getBoard()[index]) {
-      console.log("ja jogaram ai, jogue dnv");
       return;
     }
     gameBoard.drawGame(index, currentPlayer.marker);
-    const winnerSymbol = defineWinner();
+    const result = defineWinner();
     turnCount++;
-    if (winnerSymbol) {
-      if (winnerSymbol === player1.marker) {
-        player1.increaseRoundWins();
-        if (player1.getRoundWins() === 3) {
-          console.log("o player1 é o grande vencedor!!");
-          return;
-        } else {
-          console.log(`Vitória! O round é do player1!`);
-        }
-      } else {
-        player2.increaseRoundWins();
-        if (player2.getRoundWins() === 3) {
-          console.log("o player2 é o grande vencedor!!");
-          return;
-        } else {
-          console.log(`Vitória! O round é do player2!`);
-        }
-      }
-      gameBoard.resetBoard();
-      turnCount = 0;
-      return;
-    }
-    if (turnCount === 9) {
-      console.log("Deu velha!");
-      gameBoard.resetBoard();
-      turnCount = 0;
-      return;
-    }
-    switchPlayer();
-    console.log(`vez do jogador ${currentPlayer.marker}!`);
-  };
+      if (result) {
+        const winner = result.winner === player1.marker ? player1 : player2;
+        const scoreElement = winner === player1 ? scorePlayer1 : scorePlayer2;
 
+        winner.increaseRoundWins();
+
+        if (winner.getRoundWins() === 3) {
+          document.querySelector(".gameScreen").style.visibility = "hidden";
+          const playAgainBtn = startGame.getBtn();
+          playAgainBtn.style.visibility = "visible";
+          playAgainBtn.style.width = "auto";
+          playAgainBtn.textContent = "Play Again!";
+          warning.textContent = `${winner.name} is the winner!!`;
+
+          player1.resetWins();
+          player2.resetWins();
+          scorePlayer1.textContent = 0;
+          scorePlayer2.textContent = 0;
+        } else {
+          warning.textContent = `${winner.name} won this round!`;
+          scoreElement.textContent = winner.getRoundWins();
+        }
+        gameBoard.showWinners(result.line);
+        setTimeout(gameBoard.resetBoard, 2000);
+        turnCount = 0;
+        return;
+      }
+      if (turnCount === 9) {
+        warning.textContent = "It's a draw!";
+        gameBoard.showDraw();
+        setTimeout(gameBoard.resetBoard, 2000);
+        turnCount = 0;
+        return;
+      }
+      switchPlayer();
+      warning.textContent = `It's ${currentPlayer.name} time!`;
+    }
   return { playRound };
 })();
