@@ -93,9 +93,9 @@ const gameController = (() => {
   const checkWinner = () => {
     const board = gameBoard.getBoard();
     const winnerCombos = [
-      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-      [0, 4, 8], [2, 4, 6],           // Diagonals
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 4, 8], [2, 4, 6],
     ];
 
     for (const combo of winnerCombos) {
@@ -113,12 +113,22 @@ const gameController = (() => {
     displayController.updateBoard();
     turnCount = 0;
     isGameOver = false;
-    switchPlayer(); // Start the new round with the next player
+    displayController.showMessage(`It's ${currentPlayer.name}'s turn!`);
+  };
+
+  const endGame = (winner) => {
+    isGameOver = true;
+    displayController.showMessage(`${winner.name} is the grand winner!!`);
+    
+    player1.resetWins();
+    player2.resetWins();
+    
+    setTimeout(startGame.resetToStart, 3000);
   };
   
   const playRound = (index) => {
     if (gameBoard.getBoard()[index] || isGameOver) {
-      return; // Stop if square is taken or round is over
+      return;
     }
 
     gameBoard.updateSquare(index, currentPlayer.marker);
@@ -134,7 +144,7 @@ const gameController = (() => {
       displayController.highlightResult("win", result.line);
       
       if (winner.getRoundWins() === 3) {
-        displayController.showMessage(`${winner.name} is the grand winner!!`);
+        endGame(winner);
       } else {
         displayController.showMessage(`${winner.name} won this round!`);
         setTimeout(startNewRound, 2000);
@@ -151,19 +161,42 @@ const gameController = (() => {
     }
     switchPlayer();
   };
+
+  const resetGame = () => {
+    currentPlayer = player1;
+    turnCount = 0;
+    isGameOver = false;
+  };
   
-  return { playRound };
+  return { playRound, resetGame };
 })();
 
+// --- Logic for the start/end screens ---
 const startGame = (() => {
     const startBtn = document.querySelector("#start");
     const startScreen = document.querySelector(".startScreen");
     const gameScreen = document.querySelector(".gameScreen");
 
+    const resetToStart = () => {
+        displayController.updateScores(0, 0);
+        gameBoard.resetBoard();
+        displayController.clearHighlights();
+        displayController.updateBoard();
+
+        gameScreen.style.visibility = "hidden";
+        gameScreen.style.width = "0";
+        startBtn.style.visibility = "visible";
+        startBtn.textContent = "Play Again!";
+    };
+
     startBtn.addEventListener("click", () => {
-        startScreen.style.display = "none";
+        startBtn.style.visibility = "hidden";
+        startScreen.style.textShadow = "0 0 10px rgba(255, 191, 5, 0.5)"
         gameScreen.style.visibility = "visible";
         gameScreen.style.width = "100%";
         displayController.showMessage("It's Player 1's turn!");
+        gameController.resetGame()
     });
+
+    return { resetToStart };
 })();
