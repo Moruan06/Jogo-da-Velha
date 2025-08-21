@@ -4,8 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Jogo da Velha</title>
-    <link rel="stylesheet" href="style.css"/>
-
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="startScreen">
@@ -13,19 +12,19 @@
       <button id="start">START</button>
     </div>
     <div class="gameScreen">
-      <p class="score">Player 1 score: <span class="scorePlayer1"></span></p>
+      <p class="score">Player 1 score: <span class="scorePlayer1">0</span></p>
       <div class="container">
-        <button class="square"></button>
-        <button class="square"></button>
-        <button class="square"></button>
-        <button class="square"></button>
-        <button class="square"></button>
-        <button class="square"></button>
-        <button class="square"></button>
-        <button class="square"></button>
-        <button class="square"></button>
+        <button class="square" data-index="0"></button>
+        <button class="square" data-index="1"></button>
+        <button class="square" data-index="2"></button>
+        <button class="square" data-index="3"></button>
+        <button class="square" data-index="4"></button>
+        <button class="square" data-index="5"></button>
+        <button class="square" data-index="6"></button>
+        <button class="square" data-index="7"></button>
+        <button class="square" data-index="8"></button>
       </div>
-      <p class="score">Player 2 score: <span class="scorePlayer2"></span></p>
+      <p class="score">Player 2 score: <span class="scorePlayer2">0</span></p>
       <h1 class="warning"></h1>
     </div>
     <script src="script.js"></script>
