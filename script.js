@@ -1,160 +1,169 @@
-const squares = document.querySelectorAll(".square");
-const scorePlayer1 = document.querySelector(".scorePlayer1");
-const scorePlayer2 = document.querySelector(".scorePlayer2");
-const warning = document.querySelector(".warning");
-squares.forEach((square, index) => {
-  square.addEventListener("click", (e) => {
-    gameController.playRound(index);
-  });
-});
-
-const startGame = (() => {
-  const startBtn = document.querySelector("#start");
-  startBtn.addEventListener("click", (e) => {
-    e.target.style.visibility = "hidden";
-    e.target.closest(".startScreen").style.textShadow =
-      "0 0 10px  rgba(255, 191, 5, 0.5)";
-    document.querySelector(".gameScreen").style =
-      "visibility: visible; width: 100%";
-    gameBoard.resetBoard();
-  });
-
-  const getBtn = () => startBtn;
-
-  return { getBtn };
-})();
-
+// --- MODULE for managing the game data (the board array) ---
 const gameBoard = (() => {
   let board = Array(9).fill("");
 
-  const render = () => {
-    board.forEach((marker, index) => {
-      const currentSquare = squares[index];
-      currentSquare.textContent = marker;
-    });
-  };
-  const drawGame = (index, marker) => {
-    board[index] = marker;
-    render();
+  const getBoard = () => board;
+
+  const updateSquare = (index, marker) => {
+    if (index >= 0 && index < board.length) {
+      board[index] = marker;
+    }
   };
 
-  const getBoard = () => board;
   const resetBoard = () => {
     board = Array(9).fill("");
+  };
+
+  return { getBoard, updateSquare, resetBoard };
+})();
+
+// --- MODULE for controlling what the player sees (DOM interaction) ---
+const displayController = (() => {
+  const squares = document.querySelectorAll(".square");
+  const scorePlayer1 = document.querySelector(".scorePlayer1");
+  const scorePlayer2 = document.querySelector(".scorePlayer2");
+  const warning = document.querySelector(".warning");
+
+  const updateBoard = () => {
+    const board = gameBoard.getBoard();
+    board.forEach((marker, index) => {
+      squares[index].textContent = marker;
+      squares[index].disabled = !!marker;
+    });
+  };
+
+  const updateScores = (p1Score, p2Score) => {
+    scorePlayer1.textContent = p1Score;
+    scorePlayer2.textContent = p2Score;
+  };
+
+  const showMessage = (message) => {
+    warning.textContent = message;
+  };
+
+  const highlightResult = (result, line) => {
+    if (result === "win") {
+      line.forEach((index) => squares[index].classList.add("win"));
+    } else if (result === "draw") {
+      squares.forEach((square) => square.classList.add("draw"));
+    }
+  };
+
+  const clearHighlights = () => {
     squares.forEach((square) => {
       square.classList.remove("win");
       square.classList.remove("draw");
     });
-    warning.textContent = "";
-    render();
   };
 
-  const showDraw = () => {
-    squares.forEach((square) => {
-      square.classList.add("draw");
+  // Add click listeners to squares, which call the game controller
+  squares.forEach((square) => {
+    square.addEventListener("click", (e) => {
+      // Use data-index from the HTML for a cleaner approach
+      const index = parseInt(e.target.dataset.index);
+      gameController.playRound(index);
     });
-  };
+  });
 
-  const showWinners = (winLine) => {
-    winLine.forEach((index) => {
-      squares[index].classList.add("win");
-    });
-  };
-  render();
-  return { drawGame, getBoard, resetBoard, showWinners, showDraw };
+  return { updateBoard, updateScores, showMessage, highlightResult, clearHighlights };
 })();
 
-const defineWinner = () => {
-  const winnerCombos = [
-    //columns
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    //rows
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    //diagonals
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-
-  for (const combos of winnerCombos) {
-    const [a, b, c] = combos;
-    if (
-      gameBoard.getBoard()[a] &&
-      gameBoard.getBoard()[a] == gameBoard.getBoard()[b] &&
-      gameBoard.getBoard()[a] == gameBoard.getBoard()[c]
-    ) {
-      return { winner: gameBoard.getBoard()[a], line: combos };
-    }
-  }
-
-  return null;
-};
-
+// --- FACTORY for creating player objects ---
 const playerFactory = (marker, name) => {
   let roundWins = 0;
   const getRoundWins = () => roundWins;
   const increaseRoundWins = () => roundWins++;
   const resetWins = () => (roundWins = 0);
-
   return { name, marker, getRoundWins, increaseRoundWins, resetWins };
 };
 
+// --- MODULE for the main game logic (the "brain") ---
 const gameController = (() => {
   const player1 = playerFactory("X", "Player 1");
   const player2 = playerFactory("O", "Player 2");
-
   let currentPlayer = player1;
   let turnCount = 0;
+  let isGameOver = false;
 
-  const switchPlayer = () =>
-    (currentPlayer = currentPlayer === player1 ? player2 : player1);
+  const switchPlayer = () => {
+    currentPlayer = currentPlayer === player1 ? player2 : player1;
+    displayController.showMessage(`It's ${currentPlayer.name}'s turn!`);
+  };
 
+  const checkWinner = () => {
+    const board = gameBoard.getBoard();
+    const winnerCombos = [
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+      [0, 4, 8], [2, 4, 6],           // Diagonals
+    ];
+
+    for (const combo of winnerCombos) {
+      const [a, b, c] = combo;
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+        return { winner: board[a], line: combo };
+      }
+    }
+    return null;
+  };
+
+  const startNewRound = () => {
+    gameBoard.resetBoard();
+    displayController.clearHighlights();
+    displayController.updateBoard();
+    turnCount = 0;
+    isGameOver = false;
+    switchPlayer(); // Start the new round with the next player
+  };
+  
   const playRound = (index) => {
-    if (gameBoard.getBoard()[index]) {
+    if (gameBoard.getBoard()[index] || isGameOver) {
+      return; // Stop if square is taken or round is over
+    }
+
+    gameBoard.updateSquare(index, currentPlayer.marker);
+    displayController.updateBoard();
+    turnCount++;
+
+    const result = checkWinner();
+    if (result) {
+      isGameOver = true;
+      const winner = result.winner === player1.marker ? player1 : player2;
+      winner.increaseRoundWins();
+      displayController.updateScores(player1.getRoundWins(), player2.getRoundWins());
+      displayController.highlightResult("win", result.line);
+      
+      if (winner.getRoundWins() === 3) {
+        displayController.showMessage(`${winner.name} is the grand winner!!`);
+      } else {
+        displayController.showMessage(`${winner.name} won this round!`);
+        setTimeout(startNewRound, 2000);
+      }
       return;
     }
-    gameBoard.drawGame(index, currentPlayer.marker);
-    const result = defineWinner();
-    turnCount++;
-      if (result) {
-        const winner = result.winner === player1.marker ? player1 : player2;
-        const scoreElement = winner === player1 ? scorePlayer1 : scorePlayer2;
 
-        winner.increaseRoundWins();
-
-        if (winner.getRoundWins() === 3) {
-          document.querySelector(".gameScreen").style.visibility = "hidden";
-          const playAgainBtn = startGame.getBtn();
-          playAgainBtn.style.visibility = "visible";
-          playAgainBtn.style.width = "auto";
-          playAgainBtn.textContent = "Play Again!";
-          warning.textContent = `${winner.name} is the winner!!`;
-
-          player1.resetWins();
-          player2.resetWins();
-          scorePlayer1.textContent = 0;
-          scorePlayer2.textContent = 0;
-        } else {
-          warning.textContent = `${winner.name} won this round!`;
-          scoreElement.textContent = winner.getRoundWins();
-        }
-        gameBoard.showWinners(result.line);
-        setTimeout(gameBoard.resetBoard, 2000);
-        turnCount = 0;
-        return;
-      }
-      if (turnCount === 9) {
-        warning.textContent = "It's a draw!";
-        gameBoard.showDraw();
-        setTimeout(gameBoard.resetBoard, 2000);
-        turnCount = 0;
-        return;
-      }
-      switchPlayer();
-      warning.textContent = `It's ${currentPlayer.name} time!`;
+    if (turnCount === 9) {
+      isGameOver = true;
+      displayController.showMessage("It's a draw!");
+      displayController.highlightResult("draw");
+      setTimeout(startNewRound, 2000);
+      return;
     }
+    switchPlayer();
+  };
+  
   return { playRound };
+})();
+
+const startGame = (() => {
+    const startBtn = document.querySelector("#start");
+    const startScreen = document.querySelector(".startScreen");
+    const gameScreen = document.querySelector(".gameScreen");
+
+    startBtn.addEventListener("click", () => {
+        startScreen.style.display = "none";
+        gameScreen.style.visibility = "visible";
+        gameScreen.style.width = "100%";
+        displayController.showMessage("It's Player 1's turn!");
+    });
 })();
