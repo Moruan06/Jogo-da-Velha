@@ -2,7 +2,7 @@
 
 Um clássico Jogo da Velha construído com JavaScript puro, HTML e CSS. Este projeto foca em uma arquitetura de código limpa, utilizando o Padrão de Módulo (Module Pattern) e Funções de Fábrica (Factory Functions) para separar a lógica do jogo da sua interface de usuário.
 
-[Demonstração ao Vivo](https://moruan06.github.io/Jogo-da-velha/) ![Captura de Tela do Jogo](./screenshot.png) ## Funcionalidades
+[Demonstração ao Vivo](https://moruan06.github.io/Jogo-da-Velha/) ![Captura de Tela do Jogo](./screenshot.png) ## Funcionalidades
 
 -   **Contagem de Pontos:** O jogo registra a pontuação para dois jogadores (Jogador 1: X, Jogador 2: O).
 -   **Lógica de Partida "Melhor de 3":** O primeiro jogador a vencer 3 rodadas ganha o jogo.
