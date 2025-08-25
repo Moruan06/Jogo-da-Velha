@@ -1,72 +1,77 @@
 *{
     margin: 0;
     padding: 0;
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body{
     background-color: darkslategrey;
-    position: relative;
-    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
 }
 
 .startScreen{
     display: flex;
     flex-direction: column;
-    height: 50vh;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    text-shadow: 0 0 10px  rgba(0, 0, 0, 0.7);
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    gap: 50px;
 }
 
 .startScreen h1{
-  margin-top: 30px;
-  font-size: clamp(3rem, 5vw, 7vw);
-  background: linear-gradient(to top, red, orange, white);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  transition: all 0.3s ease-in;
+    font-size: clamp(3rem, 15vw, 4rem);
+    background: linear-gradient(to top, red, orange, white);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: all 0.3s ease-in;
+    text-align: center;
 }
 
 .startScreen button{
-    padding: 10px;
+    padding: 10px 20px;
     background-color: transparent;
     color: white;
-    height: auto;
-    width: auto;
-    font-size: 3rem;
+    font-size: clamp(1.5rem, 8vw, 3rem);
     border: 4px solid;
     border-image: conic-gradient(from 65deg, red, orange, white);
     border-image-slice: 1;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
 }
 
 .startScreen button:hover{
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    cursor: pointer;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
 }
 
 .gameScreen{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); 
     visibility: hidden;
     display: flex;
     align-items: center;
-    justify-content: space-around;
+    justify-content: center;
+    gap: 40px;
     width: 0;
-    height: 100vh;
+    height: 100%;
     transition: all 0.3s ease-in;
     color: white;
+    position: relative;
 }
 
-.gameScreen h1{
+.gameScreen h1.warning{
     position: absolute;
-    bottom: 80px;
+    bottom: -50px;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    text-align: center;
+    width: 100%;
 }
 
-.gameScreen p{
-    font-size: 1.5rem;
+.gameScreen p.score{
+    font-size: clamp(1rem, 3vw, 1.5rem);
 }
 
 .container{
@@ -77,14 +82,16 @@ body{
     display: grid;
     grid: repeat(3, 1fr) / repeat(3, 1fr);
     gap: 10px;
-    height: 50%;
+    width: 90vw;
+    max-width: 450px;
     aspect-ratio: 1/1;
 }
 
 .container button{
-    font-size: 3rem;
+    font-size: clamp(2rem, 15vmin, 5rem);
     border: none;
     border-radius: 15px;
+    background-color: #f0f0f0;
 }
 
 .container button:disabled {
@@ -93,9 +100,27 @@ body{
 }
 
 .win{
-    background-color: #8af78b;
+    background-color: #8af78b !important;
 }
 
 .draw{
-    background-color: #f7f78a;
+    background-color: #f7f78a !important;
+}
+
+@media (max-width: 768px) {
+  .gameScreen {
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .gameScreen h1.warning {
+    position: static;
+    order: 3;
+    margin-top: 10px;
+  }
+  
+  .score.player1 {
+      order: -1;
+  }
 }
